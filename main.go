@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"octopus/pkg/auth"
-	"octopus/pkg/config"
 	"os"
+
+	"github.com/guguducken/octopus/pkg/auth"
+	"github.com/guguducken/octopus/pkg/config"
 )
 
 func main() {

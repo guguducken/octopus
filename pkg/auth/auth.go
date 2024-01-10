@@ -2,9 +2,10 @@ package auth
 
 import (
 	"encoding/json"
-	"octopus/pkg/config"
-	"octopus/pkg/user"
-	"octopus/pkg/utils"
+
+	"github.com/guguducken/octopus/pkg/config"
+	"github.com/guguducken/octopus/pkg/user"
+	"github.com/guguducken/octopus/pkg/utils"
 )
 
 func GetAuthenticatedUser(cfg *config.Config) (user user.User, err error) {
