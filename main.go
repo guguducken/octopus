@@ -14,5 +14,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("authedUser: %v\n", authedUser)
+	fmt.Printf("Hello, %s!\n", authedUser.Login)
+	fmt.Printf("authedUser.Bio: %v\n", authedUser.Bio)
 }

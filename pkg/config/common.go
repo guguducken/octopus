@@ -1,6 +1,10 @@
 package config
 
-import "time"
+import (
+	"time"
+
+	"github.com/guguducken/octopus/pkg/common"
+)
 
 const (
 	DEFAULT_GITHUB_API_VERSION = "2022-11-28"
@@ -14,12 +18,7 @@ type Config struct {
 	ApiConfig    GitHubAPI
 	ClientConfig ClientConfig
 
-	User User
-}
-
-type User struct {
-	Login string
-	Email string
+	User *common.User
 }
 
 type GitHubAPI struct {

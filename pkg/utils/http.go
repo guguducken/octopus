@@ -4,8 +4,9 @@ import (
 	"crypto/tls"
 	"io"
 	"net/http"
-	"octopus/pkg/config"
 	"strings"
+
+	"github.com/guguducken/octopus/pkg/config"
 )
 
 type Reply struct {
@@ -15,9 +16,19 @@ type Reply struct {
 }
 
 type URL struct {
+	RawURL   string
 	Endpoint string
 	Path     string
 	Params   map[string]string
+}
+
+func GetWithRetry(cfg *config.Config, url URL, retryNumber int) (reply Reply, err error) {
+	req, err := http.NewRequest("GET", url.toRawURL(), nil)
+	if err != nil {
+		return reply, err
+	}
+	reply, err = do(cfg, req)
+	return
 }
 
 func Get(cfg *config.Config, url URL) (reply Reply, err error) {
@@ -63,7 +74,7 @@ func do(cfg *config.Config, req *http.Request) (reply Reply, err error) {
 }
 
 func setGithubHeader(req *http.Request, cfg *config.Config) {
-	req.Header.Set("Accept", "*/*")
+	req.Header.Set("Accept", "application/vnd.github+json")
 	req.Header.Set("Authorization", "Bearer "+cfg.Token)
 	req.Header.Set("X-GitHub-Api-Version", cfg.ApiConfig.GitHubAPIVersion)
 }
@@ -88,6 +99,9 @@ func newHttpClient(cfg *config.Config) *http.Client {
 }
 
 func (u URL) toRawURL() string {
+	if len(u.RawURL) != 0 {
+		return u.RawURL
+	}
 	url := u.Endpoint
 
 	pathStart, pathEnd := 0, len(u.Path)
