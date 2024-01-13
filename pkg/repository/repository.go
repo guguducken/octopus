@@ -11,10 +11,10 @@ import (
 func GetRepository(cfg *config.Config, repoOwner, repoName string) (repo *Repository, err error) {
 	repo = &Repository{}
 	url := utils.URL{
-		Endpoint: cfg.ApiConfig.GitHubRestAPI,
+		Endpoint: cfg.GetGithubRestAPI(),
 		Path:     fmt.Sprintf("repos/%s/%s", repoOwner, repoName),
 	}
-	reply, err := utils.Get(cfg, url)
+	reply, err := utils.GetWithRetry(cfg, url)
 	if err != nil {
 		return nil, err
 	}

@@ -2,7 +2,6 @@ package user
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/guguducken/octopus/pkg/common"
 	"github.com/guguducken/octopus/pkg/config"
@@ -12,14 +11,13 @@ import (
 func GetSelf(cfg *config.Config) (user *common.User, err error) {
 	user = &common.User{}
 	url := utils.URL{
-		Endpoint: cfg.ApiConfig.GitHubRestAPI,
+		Endpoint: cfg.GetGithubRestAPI(),
 		Path:     "user",
 	}
-	reply, err := utils.Get(cfg, url)
+	reply, err := utils.GetWithRetry(cfg, url)
 	if err != nil {
 		return user, err
 	}
-	fmt.Printf("string(reply.Body): %v\n", string(reply.Body))
 	if err := json.Unmarshal(reply.Body, user); err != nil {
 		return user, err
 	}

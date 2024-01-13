@@ -1,7 +1,12 @@
 package common
 
 import (
+	"errors"
 	"time"
+)
+
+var (
+	ErrRateLimited = errors.New("")
 )
 
 type User struct {
@@ -96,4 +101,29 @@ type Reactions struct {
 	Heart      int    `json:"heart"`
 	Rocket     int    `json:"rocket"`
 	Eyes       int    `json:"eyes"`
+}
+
+type RateLimit struct {
+	Resources Resources `json:"resources"`
+	// deprecated: please use resource
+	Rate *RateLimitUnit `json:"rate"`
+}
+type RateLimitUnit struct {
+	Limit     int `json:"limit"`
+	Used      int `json:"used"`
+	Remaining int `json:"remaining"`
+	Reset     int `json:"reset"`
+}
+
+type Resources struct {
+	CoreRateLimit                      *RateLimitUnit `json:"core"`
+	SearchRateLimit                    *RateLimitUnit `json:"search"`
+	GraphqlRateLimit                   *RateLimitUnit `json:"graphql"`
+	IntegrationManifestRateLimit       *RateLimitUnit `json:"integration_manifest"`
+	SourceImportRateLimit              *RateLimitUnit `json:"source_import"`
+	CodeScanningUploadRateLimit        *RateLimitUnit `json:"code_scanning_upload"`
+	ActionsRunnerRegistrationRateLimit *RateLimitUnit `json:"actions_runner_registration"`
+	ScimRateLimit                      *RateLimitUnit `json:"scim"`
+	DependencySnapshotsRateLimit       *RateLimitUnit `json:"dependency_snapshots"`
+	CodeSearchRateLimit                *RateLimitUnit `json:"code_search"`
 }

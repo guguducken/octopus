@@ -2,32 +2,35 @@ package config
 
 import (
 	"time"
-
-	"github.com/guguducken/octopus/pkg/common"
 )
 
 const (
-	DEFAULT_GITHUB_API_VERSION = "2022-11-28"
-	DEFAULT_GITHUB_REST_API    = "https://api.github.com"
-	DEFAULT_GITHU_GRAPHQL_API  = "https://api.github.com/graphql"
+	DefaultGitHubAPIVersion = "2022-11-28"
+	DefaultGitHubRestAPI    = "https://api.github.com"
+	DefaultGitHubGraphQLAPI = "https://api.github.com/graphql"
+	DefaultRequestTimeOut   = 30 * time.Second
+	DefaultRetryTimes       = 10
+	DefaultRetryDuration    = 5 * time.Second
+	DefaultPerPage          = 100
 )
 
 type Config struct {
-	Token        string
-	TimeOut      time.Duration
-	ApiConfig    GitHubAPI
-	ClientConfig ClientConfig
-
-	User *common.User
+	token         string
+	timeOut       time.Duration
+	retryTimes    int
+	retryDuration time.Duration
+	perPage       string
+	apiConfig     gitHubAPI
+	clientConfig  clientConfig
 }
 
-type GitHubAPI struct {
-	GitHubAPIVersion string
-	GitHubRestAPI    string
-	GitHubGraphQLAPI string
+type gitHubAPI struct {
+	gitHubAPIVersion string
+	gitHubRestAPI    string
+	gitHubGraphQLAPI string
 }
 
-type ClientConfig struct {
-	SkipTLSVerify bool
-	ProxyEnable   bool
+type clientConfig struct {
+	skipTLSVerify bool
+	proxyFromEnv  bool
 }
