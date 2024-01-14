@@ -14,7 +14,7 @@ func GetRepository(cfg *config.Config, repoOwner, repoName string) (repo *Reposi
 		Endpoint: cfg.GetGithubRestAPI(),
 		Path:     fmt.Sprintf("repos/%s/%s", repoOwner, repoName),
 	}
-	reply, err := utils.GetWithRetry(cfg, url)
+	reply, err := utils.GetWithRetryWithRateCheck(cfg, url)
 	if err != nil {
 		return nil, err
 	}

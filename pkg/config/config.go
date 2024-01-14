@@ -1,7 +1,6 @@
 package config
 
 import (
-	"strconv"
 	"time"
 )
 
@@ -20,7 +19,7 @@ func New(token string) *Config {
 		timeOut:       DefaultRequestTimeOut,
 		retryTimes:    DefaultRetryTimes,
 		retryDuration: DefaultRetryDuration,
-		perPage:       strconv.Itoa(DefaultPerPage),
+		perPage:       DefaultPerPage,
 	}
 }
 
@@ -53,7 +52,7 @@ func (c *Config) SetPerPage(perPage int) *Config {
 	if perPage <= 0 {
 		perPage = DefaultPerPage
 	}
-	c.perPage = strconv.Itoa(perPage)
+	c.perPage = perPage
 	return c
 }
 
@@ -85,10 +84,14 @@ func (c *Config) GetGithubAPIVersion() string {
 	return c.apiConfig.gitHubAPIVersion
 }
 
+func (c *Config) GetGithubGraphQLAPI() string {
+	return c.apiConfig.gitHubGraphQLAPI
+}
+
 func (c *Config) GetRetryDuration() time.Duration {
 	return c.retryDuration
 }
 
-func (c *Config) GetPerPage() string {
+func (c *Config) GetPerPage() int {
 	return c.perPage
 }

@@ -109,10 +109,10 @@ type RateLimit struct {
 	Rate *RateLimitUnit `json:"rate"`
 }
 type RateLimitUnit struct {
-	Limit     int `json:"limit"`
-	Used      int `json:"used"`
-	Remaining int `json:"remaining"`
-	Reset     int `json:"reset"`
+	Limit     int   `json:"limit"`
+	Used      int   `json:"used"`
+	Remaining int   `json:"remaining"`
+	Reset     int64 `json:"reset"`
 }
 
 type Resources struct {

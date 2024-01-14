@@ -19,7 +19,7 @@ type Config struct {
 	timeOut       time.Duration
 	retryTimes    int
 	retryDuration time.Duration
-	perPage       string
+	perPage       int
 	apiConfig     gitHubAPI
 	clientConfig  clientConfig
 }
