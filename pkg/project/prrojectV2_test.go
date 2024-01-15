@@ -2,6 +2,8 @@ package project
 
 import (
 	"fmt"
+	"github.com/guguducken/octopus/pkg/issue"
+	"github.com/guguducken/octopus/pkg/repository"
 	"os"
 	"testing"
 
@@ -44,5 +46,46 @@ func TestListFieldsForProjectByCursor(t *testing.T) {
 		fmt.Printf("node.Name: %v\n", node.Name)
 		fmt.Printf("node.DataType: %v\n", node.DataType)
 		fmt.Println("=========================================")
+	}
+}
+
+func TestListProjectV2ForIssueByCursor(t *testing.T) {
+	cfg := config.New(os.Getenv("GITHUB_TOKEN"))
+	repo, err := repository.GetRepository(cfg, "gugus-test", "test")
+	if err != nil {
+		panic(err)
+	}
+	is, err := issue.GetIssueForRepo(cfg, repo, 3)
+	if err != nil {
+		panic(err)
+	}
+	projects, err := ListProjectV2ForIssueByCursor(cfg, is, "")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("projects.PageInfo.HasNextPage: %v\n", projects.PageInfo.HasNextPage)
+	fmt.Printf("projects.Nodes: %v\n", projects.Nodes)
+}
+
+func TestListProjectV2ForIssue(t *testing.T) {
+	cfg := config.New(os.Getenv("GITHUB_TOKEN")).SetPerPage(1)
+	repo, err := repository.GetRepository(cfg, "matrixorigin", "matrixone")
+	if err != nil {
+		panic(err)
+	}
+	is, err := issue.GetIssueForRepo(cfg, repo, 9675)
+	if err != nil {
+		panic(err)
+	}
+	projects, err := ListProjectV2ForIssue(cfg, is)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("len(projects): %v\n", len(projects))
+	for i := 0; i < len(projects); i++ {
+		fmt.Printf("projects[i].Number: %v\n", projects[i].Number)
+		fmt.Printf("projects[i].Title: %v\n", projects[i].Title)
+		fmt.Printf("projects[i].Closed: %v\n", projects[i].Closed)
+		fmt.Println("============================================")
 	}
 }

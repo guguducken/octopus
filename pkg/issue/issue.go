@@ -22,6 +22,7 @@ func GetIssueForRepo(cfg *config.Config, repo *repository.Repository, number int
 	if err = json.Unmarshal(reply.Body, i); err != nil {
 		return i, err
 	}
+	i.Repository = repo
 	return i, err
 }
 
@@ -107,6 +108,10 @@ func listIssueForRepoByPage(cfg *config.Config, repo *repository.Repository, pag
 	reply, err := utils.GetWithRetryWithRateCheck(cfg, url)
 	if err = json.Unmarshal(reply.Body, &issues); err != nil {
 		return issues, err
+	}
+	// repo content
+	for i := 0; i < len(issues); i++ {
+		issues[i].Repository = repo
 	}
 	return issues, err
 }

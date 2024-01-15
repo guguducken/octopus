@@ -1,6 +1,7 @@
 package issue
 
 import (
+	"github.com/guguducken/octopus/pkg/repository"
 	"os/user"
 	"time"
 
@@ -23,8 +24,9 @@ const (
 )
 
 type Issue struct {
-	URL                   string            `json:"url"`
-	RepositoryURL         string            `json:"repository_url"`
+	URL                   string `json:"url"`
+	RepositoryURL         string `json:"repository_url"`
+	Repository            *repository.Repository
 	LabelsURL             string            `json:"labels_url"`
 	CommentsURL           string            `json:"comments_url"`
 	EventsURL             string            `json:"events_url"`

@@ -20,7 +20,7 @@ func QueryToJson(query string) (jsonQuery string) {
 	return fmt.Sprintf(`{"query":"%s"}`, query)
 }
 
-const GetProjectForOrgByID = `{
+const QueryProjectForOrgByID = `{
   organization(login: "%s") {
     login
     id
@@ -52,7 +52,7 @@ const GetProjectForOrgByID = `{
   }
 }`
 
-const GetProjectV2FieldsByPage = `{
+const QueryProjectV2FieldsByPage = `{
   organization(login: "%s") {
     projectV2(number: %d) {
       fields(first: %d, after: "%s") {
@@ -70,6 +70,83 @@ const GetProjectV2FieldsByPage = `{
         }
         }
         pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+      }
+    }
+  }
+}`
+
+const QueryIssueRelatedProjectsV2 = `{
+  repository(owner: "%s", name: "%s") {
+    issue(number: %d) {
+      number
+      projectsV2(first: %d,after:"%s") {
+        nodes {
+          title
+          id
+          closed
+          closedAt
+          createdAt
+          creator {
+            login
+          }
+          databaseId
+          number
+          owner {
+            id
+          }
+          public
+          readme
+          resourcePath
+          shortDescription
+          template
+          updatedAt
+          url
+          viewerCanClose
+          viewerCanReopen
+          viewerCanUpdate
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+      }
+    }
+  }
+}`
+
+const QueryIssueRelatedTextProjectV2Items = `{
+  repository(owner: "%s", name: "%s") {
+    issue(number: %d) {
+      projectItems(includeArchived: %t, first: %d, after: "%s") {
+        nodes {
+          fieldValueByName(name: "%s") {
+            ... on ProjectV2ItemFieldTextValue {
+              text
+              id
+              databaseId
+              createdAt
+              updatedAt
+              creator {
+                login
+              }
+              projectID: field{
+                ... on ProjectV2Field {
+                  project{
+                    id
+                  }
+                }
+              }
+            }
+          }
+        }
+        pageInfo{
           hasNextPage
           hasPreviousPage
           startCursor
