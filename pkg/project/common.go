@@ -12,12 +12,12 @@ var (
 	ErrGraphQLResult = errors.New("the response from graphql server contain error")
 )
 
-type ProjectReply[T FieldValue] struct {
+type ProjectReply[T FieldValuer] struct {
 	Data   *Data[T]      `json:"data"`
 	Errors GraphQLErrors `json:"errors"`
 }
 
-type Data[T FieldValue] struct {
+type Data[T FieldValuer] struct {
 	Organization *Organization  `json:"organization"`
 	Repository   *Repository[T] `json:"repository"`
 }
@@ -28,10 +28,10 @@ type Organization struct {
 	ProjectV2 *ProjectV2 `json:"projectV2"`
 }
 
-type Repository[T FieldValue] struct {
+type Repository[T FieldValuer] struct {
 	Issue *Issue[T] `json:"issue"`
 }
-type Issue[T FieldValue] struct {
+type Issue[T FieldValuer] struct {
 	ProjectsV2   *IssueRelatedProjectReply `json:"projectsV2"`
 	ProjectItems *Items[T]                 `json:"projectItems"`
 }
@@ -40,12 +40,12 @@ type IssueRelatedProjectReply struct {
 	PageInfo *PageInfo   `json:"pageInfo"`
 }
 
-type Items[T FieldValue] struct {
+type Items[T FieldValuer] struct {
 	Nodes    []FieldValueByName[T] `json:"nodes"`
 	PageInfo *PageInfo             `json:"pageInfo"`
 }
 
-type FieldValueByName[T FieldValue] struct {
+type FieldValueByName[T FieldValuer] struct {
 	FieldValueByName T `json:"fieldValueByName"`
 }
 type ProjectV2 struct {
@@ -112,9 +112,6 @@ type Field struct {
 	Project   *ProjectV2 `json:"project"`
 	UpdatedAt *time.Time `json:"updatedAt"`
 }
-
-//func GetFieldType[T FieldValue](field *Field) T {
-//}
 
 type PageInfo struct {
 	HasNextPage     bool   `json:"hasNextPage"`

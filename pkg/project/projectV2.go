@@ -109,9 +109,9 @@ func ListProjectV2ForIssueByCursor(cfg *config.Config, issue *issue.Issue, curso
 	return data.Data.Repository.Issue.ProjectsV2, err
 }
 
-func ListFieldValueForIssue[T FieldValue](cfg *config.Config, issue *issue.Issue,
+func listFieldValueForIssue[T FieldValuer](cfg *config.Config, issue *issue.Issue,
 	field *Field, includeArchived bool, fieldValueType T, cursor string) ([]T, error) {
-	allFieldValues := GenFieldValues[T]()
+	allFieldValues := GenFieldValuers[T]()
 	var err error
 
 	for {
@@ -131,12 +131,12 @@ func ListFieldValueForIssue[T FieldValue](cfg *config.Config, issue *issue.Issue
 	return allFieldValues.GetFieldValues(), err
 }
 
-func ListFieldValueForIssueByCursor[T FieldValue](cfg *config.Config, issue *issue.Issue,
+func ListFieldValueForIssueByCursor[T FieldValuer](cfg *config.Config, issue *issue.Issue,
 	field *Field, includeArchived bool, fieldValue T,
 	cursor string, subCursor string) (*FieldValues[T], error) {
 
 	data := &ProjectReply[T]{}
-	items := GenFieldValues[T]()
+	items := GenFieldValuers[T]()
 
 	perPage := cfg.GetPerPage()
 
@@ -178,4 +178,12 @@ func ListFieldValueForIssueByCursor[T FieldValue](cfg *config.Config, issue *iss
 	return items, nil
 }
 
-//func GetAllTextFieldValue
+func ListTextFieldValueForIssue(cfg *config.Config, issue *issue.Issue,
+	field *Field, includeArchived bool, cursor string) ([]TextFieldValue, error) {
+	return listFieldValueForIssue(cfg, issue, field, includeArchived, TextFieldValue{}, cursor)
+}
+
+func ListSingleSelectFieldValueForIssue(cfg *config.Config, issue *issue.Issue,
+	field *Field, includeArchived bool, cursor string) ([]SingleSelectFieldValue, error) {
+	return listFieldValueForIssue(cfg, issue, field, includeArchived, SingleSelectFieldValue{}, cursor)
+}

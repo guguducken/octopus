@@ -8,42 +8,36 @@ import (
 	"time"
 )
 
-type FieldTyper interface {
+type FieldValuer interface {
+	CommonFieldValue | TextFieldValue | NumberFieldValue | LabelFieldValue | SingleSelectFieldValue
+
 	GenQuery(cfg *config.Config, issue *issue.Issue, filed *Field, includeArchived bool, perPage int, cursor string, subCursor string) (string, error)
 	FilterProject(projectV2 *ProjectV2) bool
 	GetSubPageInfo() *PageInfo
 	IsNil() bool
 }
 
-type FieldValue interface {
-	CommonFieldValue | TextFieldValue | NumberFiledValue | LabelFieldValue | SingleSelectFieldValue
-	GenQuery(cfg *config.Config, issue *issue.Issue, filed *Field, includeArchived bool, perPage int, cursor string, subCursor string) (string, error)
-	FilterProject(projectV2 *ProjectV2) bool
-	GetSubPageInfo() *PageInfo
-	IsNil() bool
-}
-
-type FieldValues[T FieldValue] struct {
-	fieldValue []T
-	pageInfo   *PageInfo
+type FieldValues[T FieldValuer] struct {
+	fieldValues []T
+	pageInfo    *PageInfo
 }
 
 func (fvs *FieldValues[T]) GetFieldValues() []T {
-	return fvs.fieldValue
+	return fvs.fieldValues
 }
 
-func GenFieldValues[T FieldValue]() *FieldValues[T] {
+func GenFieldValuers[T FieldValuer]() *FieldValues[T] {
 	return &FieldValues[T]{
-		fieldValue: make([]T, 0, 10),
-		pageInfo:   nil,
+		fieldValues: make([]T, 0, 10),
+		pageInfo:    nil,
 	}
 }
 
 func (fvs *FieldValues[T]) Add(value T) {
-	fvs.fieldValue = append(fvs.fieldValue, value)
+	fvs.fieldValues = append(fvs.fieldValues, value)
 }
 func (fvs *FieldValues[T]) AddSlice(values []T) {
-	fvs.fieldValue = append(fvs.fieldValue, values...)
+	fvs.fieldValues = append(fvs.fieldValues, values...)
 }
 
 func (fvs *FieldValues[T]) SetPageInfo(pageInfo *PageInfo) {
@@ -105,7 +99,7 @@ func (t TextFieldValue) GenQuery(cfg *config.Config, issue *issue.Issue,
 	)), nil
 }
 
-type NumberFiledValue struct {
+type NumberFieldValue struct {
 	Number float32 `json:"number"`
 	CommonFieldValue
 }

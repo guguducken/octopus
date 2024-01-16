@@ -90,7 +90,7 @@ func TestListProjectV2ForIssue(t *testing.T) {
 	}
 }
 
-func TestListFieldValueForIssue(t *testing.T) {
+func TestListSingleSelectFieldValueForIssue(t *testing.T) {
 	cfg := config.New(os.Getenv("GITHUB_TOKEN")).SetPerPage(10)
 	org := &organization.Organization{
 		Login: "matrixorigin",
@@ -115,21 +115,15 @@ func TestListFieldValueForIssue(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	testValue := SingleSelectFieldValue{}
+
 	var field *Field
 	for i := 0; i < len(fields); i++ {
 		if fields[i].Name == "Status" {
 			field = &fields[i]
 		}
 	}
-	//fieldValues, err := ListFieldValueForIssueByCursor(cfg, is, field, false, testValue, "", "")
-	//if err != nil {
-	//	panic(err)
-	//}
-	//values := fieldValues.GetFieldValues()
-	//fmt.Printf("len(values): %v\n", len(values))
-	fmt.Printf("field.Name: %v\n", field.Name)
-	values, err := ListFieldValueForIssue[SingleSelectFieldValue](cfg, is, field, false, testValue, "")
+
+	values, err := ListSingleSelectFieldValueForIssue(cfg, is, field, false, "")
 	for _, v := range values {
 		fmt.Printf("value.Text: %v\n", v.Name)
 		fmt.Printf("v.Field.Project.Number: %v\n", v.Field.Project.Number)
