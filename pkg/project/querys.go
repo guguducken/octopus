@@ -65,6 +65,7 @@ const QueryProjectV2FieldsByPage = `{
             name
             project {
               id
+              number
             }
             updatedAt
         }
@@ -136,15 +137,63 @@ const QueryIssueRelatedTextProjectV2Items = `{
               creator {
                 login
               }
-              projectID: field{
-                ... on ProjectV2Field {
+              field{
+                ... on ProjectV2FieldCommon {
+                  name
+                  dataType
                   project{
                     id
+                    number
                   }
                 }
               }
             }
           }
+        }
+        pageInfo{
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+      }
+    }
+  }
+}`
+
+const QueryIssueRelatedSingleSelectProjectV2Items = `{
+  repository(owner: "%s", name: "%s") {
+    issue(number: %d) {
+      projectItems(includeArchived: %t, first: %d,after: "%s") {
+        nodes {
+          fieldValueByName(name: "%s") {
+            ... on ProjectV2ItemFieldSingleSelectValue {
+              name
+              nameHTML
+              color
+              description
+              descriptionHTML
+              optionId
+              id
+              databaseId
+              createdAt
+              updatedAt
+              creator {
+                login
+              }
+              field{
+                ... on ProjectV2FieldCommon {
+                  name
+                  dataType
+                  project{
+                    id
+                    number
+                  }
+                }
+              }
+            }
+          }
+          
         }
         pageInfo{
           hasNextPage

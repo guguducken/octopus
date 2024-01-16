@@ -89,3 +89,45 @@ func TestListProjectV2ForIssue(t *testing.T) {
 		fmt.Println("============================================")
 	}
 }
+
+func TestListFieldValueForIssueByCursor(t *testing.T) {
+	cfg := config.New(os.Getenv("GITHUB_TOKEN"))
+	org := &organization.Organization{
+		Login: "gugus-test",
+	}
+	p, err := GetProjectV2ForOrganization(cfg, org, 1)
+	if err != nil {
+		fmt.Printf("err.Error(): %v\n", err.Error())
+		return
+	}
+	// get fields for a project
+	fieldsReply, err := p.ListFieldsForProjectByCursor(cfg, "")
+	if err != nil {
+		fmt.Printf("err.Error(): %v\n", err.Error())
+		return
+	}
+
+	repo, err := repository.GetRepository(cfg, "gugus-test", "test")
+	if err != nil {
+		panic(err)
+	}
+	is, err := issue.GetIssueForRepo(cfg, repo, 3)
+	if err != nil {
+		panic(err)
+	}
+	testValue := SingleSelectFieldValue{}
+	var field *Field
+	for i := 0; i < len(fieldsReply.Nodes); i++ {
+		if fieldsReply.Nodes[i].DataType == "SINGLE_SELECT" {
+			field = &fieldsReply.Nodes[i]
+		}
+	}
+	fieldValues, err := ListFieldValueForIssueByCursor(cfg, is, field, false, testValue, "", "")
+	if err != nil {
+		return
+	}
+	for _, value := range fieldValues {
+		fmt.Printf("value.Text: %v\n", value.Name)
+		fmt.Printf("value.FilterProject(p): %v\n", value.FilterProject(p))
+	}
+}

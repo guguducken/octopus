@@ -90,31 +90,97 @@ func ListProjectV2ForIssueByCursor(cfg *config.Config, issue *issue.Issue, curso
 	return data.Data.Repository.Issue.ProjectsV2, err
 }
 
+func listFieldValueForIssue[T FieldValue](cfg *config.Config, issue *issue.Issue,
+	field *Field, includeArchived bool, cursor string) {
+	switch field.DataType {
+	case "TITLE":
+	}
+}
+
 func ListFieldValueForIssueByCursor[T FieldValue](cfg *config.Config, issue *issue.Issue,
-	filed *Field, includeArchived bool, fieldValue T,
-	cursor string, subCursor string) (items FieldValues[T], err error) {
+	field *Field, includeArchived bool, fieldValue T,
+	cursor string, subCursor string) (FieldValues[T], error) {
 
 	data := &ProjectReply[T]{}
+	items := make(FieldValues[T], 0, 10)
+
 	perPage := cfg.GetPerPage()
 
-	query, err := fieldValue.GenQuery(cfg, issue, filed, includeArchived, perPage, cursor, subCursor)
-	if err != nil {
-		return nil, err
-	}
-	reply, err := graphql.NewGitHubGraphQL().Exec(cfg, query)
-	if err != nil {
-		return nil, err
-	}
-	if err = json.Unmarshal(reply, data); err != nil {
-		return nil, err
-	}
-	if len(data.Errors) != 0 {
-		return nil, errors.Join(ErrGraphQLResult, errors.New(data.Errors.ToJson()))
-	}
+	for {
+		query, err := fieldValue.GenQuery(cfg, issue, field, includeArchived, perPage, cursor, subCursor)
+		if err != nil {
+			return nil, err
+		}
+		reply, err := graphql.NewGitHubGraphQL().Exec(cfg, query)
+		if err != nil {
+			return nil, err
+		}
+		if err = json.Unmarshal(reply, data); err != nil {
+			return nil, err
+		}
+		if len(data.Errors) != 0 {
+			return nil, errors.Join(ErrGraphQLResult, errors.New(data.Errors.ToJson()))
+		}
 
-	items = make(FieldValues[T], 0, 10)
-	for j := 0; j < len(data.Data.Repository.Issue.ProjectItems.Nodes); j++ {
-		items = append(items, data.Data.Repository.Issue.ProjectItems.Nodes[j].FieldValueByName)
+		nodes := data.Data.Repository.Issue.ProjectItems.Nodes
+		for j := 0; j < len(nodes); j++ {
+			if !nodes[j].FieldValueByName.IsNil() {
+				items = append(items, nodes[j].FieldValueByName)
+			}
+		}
+
+		if len(nodes) != 0 {
+			subPageInfo := nodes[0].FieldValueByName.GetSubPageInfo()
+			if subPageInfo != nil && subPageInfo.HasNextPage {
+				subCursor = subPageInfo.EndCursor
+				continue
+			}
+		}
+		break
 	}
-	return items, err
+	return items, nil
+}
+
+func ListFieldValueForIssueByCursorTest(cfg *config.Config, issue *issue.Issue,
+	field *Field, includeArchived bool, fieldValue FieldValue,
+	cursor string, subCursor string) ([]FieldValue, error) {
+
+	data := &ProjectReply{}
+	items := make([]FieldValue, 0, 10)
+
+	perPage := cfg.GetPerPage()
+
+	for {
+		query, err := fieldValue.GenQuery(cfg, issue, field, includeArchived, perPage, cursor, subCursor)
+		if err != nil {
+			return nil, err
+		}
+		reply, err := graphql.NewGitHubGraphQL().Exec(cfg, query)
+		if err != nil {
+			return nil, err
+		}
+		if err = json.Unmarshal(reply, data); err != nil {
+			return nil, err
+		}
+		if len(data.Errors) != 0 {
+			return nil, errors.Join(ErrGraphQLResult, errors.New(data.Errors.ToJson()))
+		}
+
+		nodes := data.Data.Repository.Issue.ProjectItems.Nodes
+		for j := 0; j < len(nodes); j++ {
+			if !nodes[j].FieldValueByName.IsNil() {
+				items = append(items, nodes[j].FieldValueByName)
+			}
+		}
+
+		if len(nodes) != 0 {
+			subPageInfo := nodes[0].FieldValueByName.GetSubPageInfo()
+			if subPageInfo != nil && subPageInfo.HasNextPage {
+				subCursor = subPageInfo.EndCursor
+				continue
+			}
+		}
+		break
+	}
+	return items, nil
 }
