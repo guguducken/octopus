@@ -29,7 +29,26 @@ func GetProjectV2ForOrganization(cfg *config.Config, org *organization.Organizat
 	return data.Data.Organization.ProjectV2, err
 }
 
-func (p *ProjectV2) ListFieldsForProjectByCursor(cfg *config.Config, cursor string) (fieldsReply *FieldsReply, err error) {
+func (p *ProjectV2) ListFields(cfg *config.Config) (fields []Field, err error) {
+	cursor := ""
+	fields = make([]Field, 0, 10)
+	for {
+		var fieldsReply *FieldsReply
+		fieldsReply, err = p.ListFieldsByCursor(cfg, cursor)
+		if err != nil {
+			break
+		}
+		fields = append(fields, fieldsReply.Nodes...)
+		if fieldsReply.PageInfo.HasNextPage {
+			cursor = fieldsReply.PageInfo.EndCursor
+			continue
+		}
+		break
+	}
+	return fields, err
+}
+
+func (p *ProjectV2) ListFieldsByCursor(cfg *config.Config, cursor string) (fieldsReply *FieldsReply, err error) {
 	data := &ProjectReply[CommonFieldValue]{}
 	perPage := cfg.GetPerPage()
 
@@ -90,44 +109,62 @@ func ListProjectV2ForIssueByCursor(cfg *config.Config, issue *issue.Issue, curso
 	return data.Data.Repository.Issue.ProjectsV2, err
 }
 
-func listFieldValueForIssue[T FieldValue](cfg *config.Config, issue *issue.Issue,
-	field *Field, includeArchived bool, cursor string) {
-	switch field.DataType {
-	case "TITLE":
+func ListFieldValueForIssue[T FieldValue](cfg *config.Config, issue *issue.Issue,
+	field *Field, includeArchived bool, fieldValueType T, cursor string) ([]T, error) {
+	allFieldValues := GenFieldValues[T]()
+	var err error
+
+	for {
+		var fieldValues *FieldValues[T]
+		fieldValues, err = ListFieldValueForIssueByCursor(cfg, issue, field, includeArchived, fieldValueType, cursor, "")
+		if err != nil {
+			break
+		}
+		allFieldValues.AddSlice(fieldValues.GetFieldValues())
+		pageInfo := fieldValues.GetPageInfo()
+		if pageInfo.HasNextPage {
+			cursor = pageInfo.EndCursor
+			continue
+		}
+		break
 	}
+	return allFieldValues.GetFieldValues(), err
 }
 
 func ListFieldValueForIssueByCursor[T FieldValue](cfg *config.Config, issue *issue.Issue,
 	field *Field, includeArchived bool, fieldValue T,
-	cursor string, subCursor string) (FieldValues[T], error) {
+	cursor string, subCursor string) (*FieldValues[T], error) {
 
 	data := &ProjectReply[T]{}
-	items := make(FieldValues[T], 0, 10)
+	items := GenFieldValues[T]()
 
 	perPage := cfg.GetPerPage()
 
 	for {
 		query, err := fieldValue.GenQuery(cfg, issue, field, includeArchived, perPage, cursor, subCursor)
 		if err != nil {
-			return nil, err
+			return items, err
 		}
 		reply, err := graphql.NewGitHubGraphQL().Exec(cfg, query)
 		if err != nil {
-			return nil, err
+			return items, err
 		}
 		if err = json.Unmarshal(reply, data); err != nil {
-			return nil, err
+			return items, err
 		}
 		if len(data.Errors) != 0 {
-			return nil, errors.Join(ErrGraphQLResult, errors.New(data.Errors.ToJson()))
+			return items, errors.Join(ErrGraphQLResult, errors.New(data.Errors.ToJson()))
 		}
 
 		nodes := data.Data.Repository.Issue.ProjectItems.Nodes
 		for j := 0; j < len(nodes); j++ {
 			if !nodes[j].FieldValueByName.IsNil() {
-				items = append(items, nodes[j].FieldValueByName)
+				items.Add(nodes[j].FieldValueByName)
 			}
 		}
+
+		pageInfo := data.Data.Repository.Issue.ProjectItems.PageInfo
+		items.SetPageInfo(pageInfo)
 
 		if len(nodes) != 0 {
 			subPageInfo := nodes[0].FieldValueByName.GetSubPageInfo()
@@ -141,46 +178,4 @@ func ListFieldValueForIssueByCursor[T FieldValue](cfg *config.Config, issue *iss
 	return items, nil
 }
 
-func ListFieldValueForIssueByCursorTest(cfg *config.Config, issue *issue.Issue,
-	field *Field, includeArchived bool, fieldValue FieldValue,
-	cursor string, subCursor string) ([]FieldValue, error) {
-
-	data := &ProjectReply{}
-	items := make([]FieldValue, 0, 10)
-
-	perPage := cfg.GetPerPage()
-
-	for {
-		query, err := fieldValue.GenQuery(cfg, issue, field, includeArchived, perPage, cursor, subCursor)
-		if err != nil {
-			return nil, err
-		}
-		reply, err := graphql.NewGitHubGraphQL().Exec(cfg, query)
-		if err != nil {
-			return nil, err
-		}
-		if err = json.Unmarshal(reply, data); err != nil {
-			return nil, err
-		}
-		if len(data.Errors) != 0 {
-			return nil, errors.Join(ErrGraphQLResult, errors.New(data.Errors.ToJson()))
-		}
-
-		nodes := data.Data.Repository.Issue.ProjectItems.Nodes
-		for j := 0; j < len(nodes); j++ {
-			if !nodes[j].FieldValueByName.IsNil() {
-				items = append(items, nodes[j].FieldValueByName)
-			}
-		}
-
-		if len(nodes) != 0 {
-			subPageInfo := nodes[0].FieldValueByName.GetSubPageInfo()
-			if subPageInfo != nil && subPageInfo.HasNextPage {
-				subCursor = subPageInfo.EndCursor
-				continue
-			}
-		}
-		break
-	}
-	return items, nil
-}
+//func GetAllTextFieldValue

@@ -193,7 +193,6 @@ const QueryIssueRelatedSingleSelectProjectV2Items = `{
               }
             }
           }
-          
         }
         pageInfo{
           hasNextPage

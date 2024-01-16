@@ -37,6 +37,10 @@ type URL struct {
 }
 
 func GetWithRetryWithRateCheck(cfg *config.Config, url URL) (reply *Reply, err error) {
+	start := time.Now()
+	defer func() {
+		fmt.Printf("Http Get use %fs\n", time.Since(start).Seconds())
+	}()
 	retryTimes := cfg.GetRetryTimes()
 	for j := 0; j < retryTimes; j++ {
 		reply, err = GetWithRetry(cfg, url)
@@ -53,6 +57,10 @@ func GetWithRetryWithRateCheck(cfg *config.Config, url URL) (reply *Reply, err e
 }
 
 func PostWithRetryWithRateCheck(cfg *config.Config, url URL, body string) (reply *Reply, err error) {
+	start := time.Now()
+	defer func() {
+		fmt.Printf("Http Post use %fs\n", time.Since(start).Seconds())
+	}()
 	retryTimes := cfg.GetRetryTimes()
 	for j := 0; j < retryTimes; j++ {
 		reply, err = PostWithRetry(cfg, url, body)

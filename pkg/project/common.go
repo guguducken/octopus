@@ -41,7 +41,8 @@ type IssueRelatedProjectReply struct {
 }
 
 type Items[T FieldValue] struct {
-	Nodes []FieldValueByName[T] `json:"nodes"`
+	Nodes    []FieldValueByName[T] `json:"nodes"`
+	PageInfo *PageInfo             `json:"pageInfo"`
 }
 
 type FieldValueByName[T FieldValue] struct {
@@ -111,6 +112,9 @@ type Field struct {
 	Project   *ProjectV2 `json:"project"`
 	UpdatedAt *time.Time `json:"updatedAt"`
 }
+
+//func GetFieldType[T FieldValue](field *Field) T {
+//}
 
 type PageInfo struct {
 	HasNextPage     bool   `json:"hasNextPage"`

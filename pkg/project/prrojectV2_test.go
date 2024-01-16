@@ -35,7 +35,7 @@ func TestListFieldsForProjectByCursor(t *testing.T) {
 		fmt.Printf("err.Error(): %v\n", err.Error())
 		return
 	}
-	fieldsReply, err := p.ListFieldsForProjectByCursor(cfg, "")
+	fieldsReply, err := p.ListFieldsByCursor(cfg, "")
 	if err != nil {
 		fmt.Printf("err.Error(): %v\n", err.Error())
 		return
@@ -90,44 +90,49 @@ func TestListProjectV2ForIssue(t *testing.T) {
 	}
 }
 
-func TestListFieldValueForIssueByCursor(t *testing.T) {
-	cfg := config.New(os.Getenv("GITHUB_TOKEN"))
+func TestListFieldValueForIssue(t *testing.T) {
+	cfg := config.New(os.Getenv("GITHUB_TOKEN")).SetPerPage(10)
 	org := &organization.Organization{
-		Login: "gugus-test",
+		Login: "matrixorigin",
 	}
-	p, err := GetProjectV2ForOrganization(cfg, org, 1)
+	p, err := GetProjectV2ForOrganization(cfg, org, 33)
 	if err != nil {
 		fmt.Printf("err.Error(): %v\n", err.Error())
 		return
 	}
 	// get fields for a project
-	fieldsReply, err := p.ListFieldsForProjectByCursor(cfg, "")
+	fields, err := p.ListFields(cfg)
 	if err != nil {
 		fmt.Printf("err.Error(): %v\n", err.Error())
 		return
 	}
 
-	repo, err := repository.GetRepository(cfg, "gugus-test", "test")
+	repo, err := repository.GetRepository(cfg, org.Login, "matrixone")
 	if err != nil {
 		panic(err)
 	}
-	is, err := issue.GetIssueForRepo(cfg, repo, 3)
+	is, err := issue.GetIssueForRepo(cfg, repo, 4971)
 	if err != nil {
 		panic(err)
 	}
 	testValue := SingleSelectFieldValue{}
 	var field *Field
-	for i := 0; i < len(fieldsReply.Nodes); i++ {
-		if fieldsReply.Nodes[i].DataType == "SINGLE_SELECT" {
-			field = &fieldsReply.Nodes[i]
+	for i := 0; i < len(fields); i++ {
+		if fields[i].Name == "Status" {
+			field = &fields[i]
 		}
 	}
-	fieldValues, err := ListFieldValueForIssueByCursor(cfg, is, field, false, testValue, "", "")
-	if err != nil {
-		return
-	}
-	for _, value := range fieldValues {
-		fmt.Printf("value.Text: %v\n", value.Name)
-		fmt.Printf("value.FilterProject(p): %v\n", value.FilterProject(p))
+	//fieldValues, err := ListFieldValueForIssueByCursor(cfg, is, field, false, testValue, "", "")
+	//if err != nil {
+	//	panic(err)
+	//}
+	//values := fieldValues.GetFieldValues()
+	//fmt.Printf("len(values): %v\n", len(values))
+	fmt.Printf("field.Name: %v\n", field.Name)
+	values, err := ListFieldValueForIssue[SingleSelectFieldValue](cfg, is, field, false, testValue, "")
+	for _, v := range values {
+		fmt.Printf("value.Text: %v\n", v.Name)
+		fmt.Printf("v.Field.Project.Number: %v\n", v.Field.Project.Number)
+		fmt.Printf("value.FilterProject(p): %v\n", v.FilterProject(p))
 	}
 }

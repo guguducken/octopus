@@ -8,16 +8,56 @@ import (
 	"time"
 )
 
-type FieldValue interface {
-	//CommonFieldValue | TextFieldValue | NumberFiledValue | LabelFieldValue | SingleSelectFieldValue
+type FieldTyper interface {
 	GenQuery(cfg *config.Config, issue *issue.Issue, filed *Field, includeArchived bool, perPage int, cursor string, subCursor string) (string, error)
-	GenNilValue() FieldValue
 	FilterProject(projectV2 *ProjectV2) bool
 	GetSubPageInfo() *PageInfo
 	IsNil() bool
 }
 
-type FieldValues[T FieldValue] []T
+type FieldValue interface {
+	CommonFieldValue | TextFieldValue | NumberFiledValue | LabelFieldValue | SingleSelectFieldValue
+	GenQuery(cfg *config.Config, issue *issue.Issue, filed *Field, includeArchived bool, perPage int, cursor string, subCursor string) (string, error)
+	FilterProject(projectV2 *ProjectV2) bool
+	GetSubPageInfo() *PageInfo
+	IsNil() bool
+}
+
+type FieldValues[T FieldValue] struct {
+	fieldValue []T
+	pageInfo   *PageInfo
+}
+
+func (fvs *FieldValues[T]) GetFieldValues() []T {
+	return fvs.fieldValue
+}
+
+func GenFieldValues[T FieldValue]() *FieldValues[T] {
+	return &FieldValues[T]{
+		fieldValue: make([]T, 0, 10),
+		pageInfo:   nil,
+	}
+}
+
+func (fvs *FieldValues[T]) Add(value T) {
+	fvs.fieldValue = append(fvs.fieldValue, value)
+}
+func (fvs *FieldValues[T]) AddSlice(values []T) {
+	fvs.fieldValue = append(fvs.fieldValue, values...)
+}
+
+func (fvs *FieldValues[T]) SetPageInfo(pageInfo *PageInfo) {
+	fvs.pageInfo = &PageInfo{
+		HasNextPage:     pageInfo.HasNextPage,
+		HasPreviousPage: pageInfo.HasPreviousPage,
+		StartCursor:     pageInfo.StartCursor,
+		EndCursor:       pageInfo.EndCursor,
+	}
+}
+
+func (fvs *FieldValues[T]) GetPageInfo() *PageInfo {
+	return fvs.pageInfo
+}
 
 type CommonFieldValue struct {
 	ID         string     `json:"id"`
@@ -27,6 +67,8 @@ type CommonFieldValue struct {
 	// only get login for creator
 	Creator *common.User `json:"creator"`
 	Field   *Field       `json:"field"`
+	// PageInfo for temp
+	pageInfo *PageInfo
 }
 
 func (c CommonFieldValue) FilterProject(projectV2 *ProjectV2) bool {
