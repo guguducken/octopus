@@ -6,11 +6,10 @@ import (
 )
 
 type GraphQL interface {
-	Exec(string) ([]byte, error)
+	Exec(cfg *config.Config, query string) ([]byte, error)
 }
 
-type GitHubGraphQL struct {
-}
+type GitHubGraphQL struct{}
 
 func NewGitHubGraphQL() *GitHubGraphQL {
 	return &GitHubGraphQL{}

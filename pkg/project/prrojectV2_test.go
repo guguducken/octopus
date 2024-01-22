@@ -2,10 +2,11 @@ package project
 
 import (
 	"fmt"
-	"github.com/guguducken/octopus/pkg/issue"
-	"github.com/guguducken/octopus/pkg/repository"
 	"os"
 	"testing"
+
+	"github.com/guguducken/octopus/pkg/issue"
+	"github.com/guguducken/octopus/pkg/repository"
 
 	"github.com/guguducken/octopus/pkg/config"
 	"github.com/guguducken/octopus/pkg/organization"
@@ -123,7 +124,7 @@ func TestListSingleSelectFieldValueForIssue(t *testing.T) {
 		}
 	}
 
-	values, err := ListSingleSelectFieldValueForIssue(cfg, is, field, false, "")
+	values, err := ListSingleSelectFieldValueForIssue(cfg, is, field, false)
 	for _, v := range values {
 		fmt.Printf("value.Text: %v\n", v.Name)
 		fmt.Printf("v.Field.Project.Number: %v\n", v.Field.Project.Number)

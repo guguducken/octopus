@@ -3,8 +3,10 @@ package issue
 import (
 	"fmt"
 	"os"
+	"sort"
 	"testing"
 
+	"github.com/guguducken/octopus/pkg/common"
 	"github.com/guguducken/octopus/pkg/config"
 	"github.com/guguducken/octopus/pkg/repository"
 )
@@ -41,4 +43,28 @@ func TestGetTimeLine(t *testing.T) {
 	}
 	fmt.Printf("len(events): %v\n", len(events))
 	fmt.Printf("events: %v\n", events)
+}
+
+func TestListIssueForRepoByFilter(t *testing.T) {
+	cfg := config.New(os.Getenv("GITHUB_TOKEN"))
+	repo, err := repository.GetRepository(cfg, "matrixorigin", "matrixone")
+	if err != nil {
+		panic(err)
+	}
+	filter := NewFilter()
+	filter.SetLabelsFilter([]common.Label{
+		{Name: "kind/bug"},
+	})
+	issues, err := ListIssueForRepoByFilter(cfg, repo, filter)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("len(issues): %v\n", len(issues))
+	sort.Slice(issues, func(i, j int) bool {
+		return issues[i].Number < issues[j].Number
+	})
+	for _, i := range issues {
+		fmt.Printf("i.Number: %v\n", i.Number)
+	}
+
 }

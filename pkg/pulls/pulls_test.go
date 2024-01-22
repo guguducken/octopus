@@ -38,5 +38,7 @@ func TestListPullsForRepo(t *testing.T) {
 		panic(err)
 	}
 	fmt.Printf("len(pulls): %v\n", len(pulls))
-	fmt.Printf("pulls[0]: %v\n", pulls[0])
+	for _, pull := range pulls {
+		fmt.Printf("pull.Number: %v\n", pull.Number)
+	}
 }

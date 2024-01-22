@@ -2,10 +2,11 @@ package project
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/guguducken/octopus/pkg/common"
 	"github.com/guguducken/octopus/pkg/config"
 	"github.com/guguducken/octopus/pkg/issue"
-	"time"
 )
 
 type FieldValuer interface {

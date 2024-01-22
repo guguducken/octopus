@@ -3,10 +3,11 @@ package organization
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+
 	"github.com/guguducken/octopus/pkg/common"
 	"github.com/guguducken/octopus/pkg/config"
 	"github.com/guguducken/octopus/pkg/utils"
-	"strconv"
 )
 
 type Members []common.User
@@ -54,7 +55,7 @@ func (o Organization) ListTeamsByPage(cfg *config.Config, page int) (teams Teams
 	return teams, err
 }
 
-func (o Organization) ListTeamMembers(cfg *config.Config, team Team, filter *common.Filter) (members Members, err error) {
+func (o Organization) ListTeamMembers(cfg *config.Config, team Team, filter common.Filter) (members Members, err error) {
 	members = make([]common.User, 0, 20)
 	page := 1
 	perPage := cfg.GetPerPage()
@@ -76,7 +77,7 @@ func (o Organization) ListTeamMembers(cfg *config.Config, team Team, filter *com
 	return members, err
 }
 
-func (o Organization) ListTeamMembersByPage(cfg *config.Config, team Team, page int, filter *common.Filter) (members Members, err error) {
+func (o Organization) ListTeamMembersByPage(cfg *config.Config, team Team, page int, filter common.Filter) (members Members, err error) {
 	members = make([]common.User, 0, 10)
 	params := map[string]string{
 		"per_page": strconv.Itoa(cfg.GetPerPage()),

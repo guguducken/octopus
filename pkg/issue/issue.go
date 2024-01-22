@@ -22,6 +22,10 @@ func GetIssueForRepo(cfg *config.Config, repo *repository.Repository, number int
 	if err = json.Unmarshal(reply.Body, i); err != nil {
 		return i, err
 	}
+
+	if i.PullRequest != nil {
+		return nil, ErrNotIssue
+	}
 	i.Repository = repo
 	return i, err
 }
@@ -62,11 +66,12 @@ func (i Issue) GetTimeLineByPage(cfg *config.Config, page int) (events Events, e
 	return events, err
 }
 
-func ListIssueForRepoByPage(cfg *config.Config, repo *repository.Repository, page int, filter *common.Filter) (issues []Issue, err error) {
-	return listIssueForRepoByPage(cfg, repo, page, filter)
+func ListIssueForRepoByPage(cfg *config.Config, repo *repository.Repository, page int, filter common.Filter) (issues []Issue, err error) {
+	issues, err = listIssueForRepoByPage(cfg, repo, page, filter)
+	return FilterPullRequest(issues), err
 }
 
-func listIssueForRepo(cfg *config.Config, repo *repository.Repository, filter *common.Filter) (issues []Issue, err error) {
+func listIssueForRepo(cfg *config.Config, repo *repository.Repository, filter common.Filter) (issues []Issue, err error) {
 	issues = make([]Issue, 0, 20)
 
 	page := 1
@@ -82,10 +87,10 @@ func listIssueForRepo(cfg *config.Config, repo *repository.Repository, filter *c
 			break
 		}
 	}
-	return issues, err
+	return FilterPullRequest(issues), err
 }
 
-func listIssueForRepoByPage(cfg *config.Config, repo *repository.Repository, page int, filter *common.Filter) (issues []Issue, err error) {
+func listIssueForRepoByPage(cfg *config.Config, repo *repository.Repository, page int, filter common.Filter) (issues []Issue, err error) {
 	issues = make([]Issue, 0, 20)
 
 	// prepare url params
@@ -113,16 +118,19 @@ func listIssueForRepoByPage(cfg *config.Config, repo *repository.Repository, pag
 	for i := 0; i < len(issues); i++ {
 		issues[i].Repository = repo
 	}
+	// we will do not filter out pull request in there
 	return issues, err
 }
 
 func ListIssueForRepoByLabels(cfg *config.Config, repo *repository.Repository, labels []common.Label) (issues []Issue, err error) {
-	filter := common.NewFilter().SetLabelsFilter(labels)
+	filter := NewFilter()
+	filter.SetLabelsFilter(labels)
 	return listIssueForRepo(cfg, repo, filter)
 }
 
 func ListIssueForRepoByMilestone(cfg *config.Config, repo *repository.Repository, milestone *common.Milestone) (issues []Issue, err error) {
-	filter := common.NewFilter().SetMileStoneFilter(milestone)
+	filter := NewFilter()
+	filter.SetMileStoneFilter(milestone)
 	return listIssueForRepo(cfg, repo, filter)
 }
 
@@ -130,11 +138,27 @@ func ListIssueForRepo(cfg *config.Config, repo *repository.Repository) (issues [
 	return listIssueForRepo(cfg, repo, nil)
 }
 
-func ListIssueForRepoByFilter(cfg *config.Config, repo *repository.Repository, filter *common.Filter) (issues []Issue, err error) {
+func ListIssueForRepoByFilter(cfg *config.Config, repo *repository.Repository, filter common.Filter) (issues []Issue, err error) {
 	return listIssueForRepo(cfg, repo, filter)
 }
 
 func (i Issue) ToJson() (string, error) {
 	s, err := json.Marshal(i)
 	return string(s), err
+}
+
+func FilterPullRequest(issues []Issue) []Issue {
+	left, right := 0, len(issues)-1
+	for left < right {
+		if issues[left].PullRequest == nil {
+			left++
+			continue
+		}
+		if issues[right].PullRequest != nil {
+			right--
+			continue
+		}
+		issues[left], issues[right] = issues[right], issues[left]
+	}
+	return issues[:right]
 }

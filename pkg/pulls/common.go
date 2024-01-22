@@ -80,3 +80,36 @@ type Links struct {
 type Link struct {
 	Href string `json:"href"`
 }
+
+type Commit struct {
+	Sha         string        `json:"sha"`
+	NodeID      string        `json:"node_id"`
+	Commit      *CommitDetail `json:"commit"`
+	URL         string        `json:"url"`
+	HTMLURL     string        `json:"html_url"`
+	CommentsURL string        `json:"comments_url"`
+	Author      *common.User  `json:"author"`
+	// Committer only have Name Email Date
+	Committer *common.User `json:"committer"`
+	// parents only have Sha URL HTMLURL
+	Parents []Commit `json:"parents"`
+}
+type Tree struct {
+	Sha string `json:"sha"`
+	URL string `json:"url"`
+}
+type Verification struct {
+	Verified  bool   `json:"verified"`
+	Reason    string `json:"reason"`
+	Signature string `json:"signature"`
+	Payload   string `json:"payload"`
+}
+type CommitDetail struct {
+	Author       *common.User `json:"author"`
+	Committer    *common.User `json:"committer"`
+	Message      string       `json:"message"`
+	Tree         Tree         `json:"tree"`
+	URL          string       `json:"url"`
+	CommentCount int          `json:"comment_count"`
+	Verification Verification `json:"verification"`
+}

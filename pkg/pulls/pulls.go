@@ -29,15 +29,15 @@ func ListPullsForRepo(cfg *config.Config, repo *repository.Repository) (pulls []
 	return listPullsForRepo(cfg, repo, nil)
 }
 
-func ListPullsForRepoByFilter(cfg *config.Config, repo *repository.Repository, filter *common.Filter) (pulls []PullRequest, err error) {
+func ListPullsForRepoByFilter(cfg *config.Config, repo *repository.Repository, filter common.Filter) (pulls []PullRequest, err error) {
 	return listPullsForRepo(cfg, repo, filter)
 }
 
-func ListPullsForRepoByPage(cfg *config.Config, repo *repository.Repository, page int, filter *common.Filter) (pulls []PullRequest, err error) {
+func ListPullsForRepoByPage(cfg *config.Config, repo *repository.Repository, page int, filter common.Filter) (pulls []PullRequest, err error) {
 	return listPullsForRepoByPage(cfg, repo, page, filter)
 }
 
-func listPullsForRepo(cfg *config.Config, repo *repository.Repository, filter *common.Filter) (pulls []PullRequest, err error) {
+func listPullsForRepo(cfg *config.Config, repo *repository.Repository, filter common.Filter) (pulls []PullRequest, err error) {
 	pulls = make([]PullRequest, 0, 10)
 	page := 1
 	for {
@@ -55,7 +55,7 @@ func listPullsForRepo(cfg *config.Config, repo *repository.Repository, filter *c
 	return pulls, err
 }
 
-func listPullsForRepoByPage(cfg *config.Config, repo *repository.Repository, page int, filter *common.Filter) (pulls []PullRequest, err error) {
+func listPullsForRepoByPage(cfg *config.Config, repo *repository.Repository, page int, filter common.Filter) (pulls []PullRequest, err error) {
 	params := map[string]string{
 		"page":     strconv.Itoa(page),
 		"per_page": strconv.Itoa(cfg.GetPerPage()),

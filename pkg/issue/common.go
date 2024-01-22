@@ -1,9 +1,12 @@
 package issue
 
 import (
-	"github.com/guguducken/octopus/pkg/repository"
+	"errors"
 	"os/user"
 	"time"
+
+	"github.com/guguducken/octopus/pkg/pulls"
+	"github.com/guguducken/octopus/pkg/repository"
 
 	"github.com/guguducken/octopus/pkg/common"
 )
@@ -23,37 +26,42 @@ const (
 	EventClosed          = "closed"
 )
 
+var (
+	ErrNotIssue = errors.New("this is not an issue, maybe is a pull request")
+)
+
 type Issue struct {
 	URL                   string `json:"url"`
 	RepositoryURL         string `json:"repository_url"`
 	Repository            *repository.Repository
-	LabelsURL             string            `json:"labels_url"`
-	CommentsURL           string            `json:"comments_url"`
-	EventsURL             string            `json:"events_url"`
-	HTMLURL               string            `json:"html_url"`
-	ID                    int               `json:"id"`
-	NodeID                string            `json:"node_id"`
-	Number                int               `json:"number"`
-	Title                 string            `json:"title"`
-	User                  *common.User      `json:"user"`
-	Labels                []common.Label    `json:"labels"`
-	State                 string            `json:"state"`
-	Locked                bool              `json:"locked"`
-	Assignee              *common.User      `json:"assignee"`
-	Assignees             []common.User     `json:"assignees"`
-	Milestone             *common.Milestone `json:"milestone"`
-	Comments              int               `json:"comments"`
-	CreatedAt             *time.Time        `json:"created_at"`
-	UpdatedAt             *time.Time        `json:"updated_at"`
-	ClosedAt              *time.Time        `json:"closed_at"`
-	AuthorAssociation     string            `json:"author_association"`
-	ActiveLockReason      string            `json:"active_lock_reason"`
-	Body                  string            `json:"body"`
-	ClosedBy              *common.User      `json:"closed_by"`
-	Reactions             *common.Reactions `json:"reactions"`
-	TimelineURL           string            `json:"timeline_url"`
-	PerformedViaGithubApp bool              `json:"performed_via_github_app"`
-	StateReason           string            `json:"state_reason"`
+	LabelsURL             string             `json:"labels_url"`
+	CommentsURL           string             `json:"comments_url"`
+	EventsURL             string             `json:"events_url"`
+	HTMLURL               string             `json:"html_url"`
+	ID                    int                `json:"id"`
+	NodeID                string             `json:"node_id"`
+	Number                int                `json:"number"`
+	Title                 string             `json:"title"`
+	User                  *common.User       `json:"user"`
+	Labels                []common.Label     `json:"labels"`
+	State                 string             `json:"state"`
+	Locked                bool               `json:"locked"`
+	Assignee              *common.User       `json:"assignee"`
+	Assignees             []common.User      `json:"assignees"`
+	Milestone             *common.Milestone  `json:"milestone"`
+	Comments              int                `json:"comments"`
+	CreatedAt             *time.Time         `json:"created_at"`
+	UpdatedAt             *time.Time         `json:"updated_at"`
+	ClosedAt              *time.Time         `json:"closed_at"`
+	AuthorAssociation     string             `json:"author_association"`
+	ActiveLockReason      string             `json:"active_lock_reason"`
+	Body                  string             `json:"body"`
+	ClosedBy              *common.User       `json:"closed_by"`
+	Reactions             *common.Reactions  `json:"reactions"`
+	TimelineURL           string             `json:"timeline_url"`
+	PerformedViaGithubApp bool               `json:"performed_via_github_app"`
+	StateReason           string             `json:"state_reason"`
+	PullRequest           *pulls.PullRequest `json:"pull_request"`
 }
 
 type Events []Event

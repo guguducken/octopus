@@ -4,10 +4,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"github.com/guguducken/octopus/pkg/config"
 	"github.com/guguducken/octopus/pkg/graphql"
 	"github.com/guguducken/octopus/pkg/issue"
 	"github.com/guguducken/octopus/pkg/organization"
+)
+
+const (
+	DefaultStartCursor = ""
 )
 
 func GetProjectV2ForOrganization(cfg *config.Config, org *organization.Organization, id int) (projectv2 *ProjectV2, err error) {
@@ -179,11 +184,21 @@ func ListFieldValueForIssueByCursor[T FieldValuer](cfg *config.Config, issue *is
 }
 
 func ListTextFieldValueForIssue(cfg *config.Config, issue *issue.Issue,
-	field *Field, includeArchived bool, cursor string) ([]TextFieldValue, error) {
-	return listFieldValueForIssue(cfg, issue, field, includeArchived, TextFieldValue{}, cursor)
+	field *Field, includeArchived bool) ([]TextFieldValue, error) {
+	return listFieldValueForIssue(cfg, issue, field, includeArchived, TextFieldValue{}, DefaultStartCursor)
 }
 
 func ListSingleSelectFieldValueForIssue(cfg *config.Config, issue *issue.Issue,
-	field *Field, includeArchived bool, cursor string) ([]SingleSelectFieldValue, error) {
-	return listFieldValueForIssue(cfg, issue, field, includeArchived, SingleSelectFieldValue{}, cursor)
+	field *Field, includeArchived bool) ([]SingleSelectFieldValue, error) {
+	return listFieldValueForIssue(cfg, issue, field, includeArchived, SingleSelectFieldValue{}, DefaultStartCursor)
+}
+
+func ListNumberFieldValueForIssue(cfg *config.Config, issue *issue.Issue,
+	field *Field, includeArchived bool) ([]NumberFieldValue, error) {
+	return listFieldValueForIssue(cfg, issue, field, includeArchived, NumberFieldValue{}, DefaultStartCursor)
+}
+
+func ListLabelFieldValueForIssue(cfg *config.Config, issue *issue.Issue,
+	field *Field, includeArchived bool) ([]LabelFieldValue, error) {
+	return listFieldValueForIssue(cfg, issue, field, includeArchived, LabelFieldValue{}, DefaultStartCursor)
 }
