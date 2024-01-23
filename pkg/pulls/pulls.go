@@ -3,7 +3,6 @@ package pulls
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 
 	"github.com/guguducken/octopus/pkg/common"
 	"github.com/guguducken/octopus/pkg/config"
@@ -25,24 +24,29 @@ func GetPullForRepo(cfg *config.Config, repo *repository.Repository, pullNumber 
 	return pull, err
 }
 
-func ListPullsForRepo(cfg *config.Config, repo *repository.Repository) (pulls []PullRequest, err error) {
-	return listPullsForRepo(cfg, repo, nil)
-}
-
 func ListPullsForRepoByFilter(cfg *config.Config, repo *repository.Repository, filter common.Filter) (pulls []PullRequest, err error) {
-	return listPullsForRepo(cfg, repo, filter)
+	pulls = make([]PullRequest, 0, 10)
+
+	url := utils.URL{
+		Endpoint: cfg.GetGithubRestAPI(),
+		Path:     fmt.Sprintf("repos/%s/pulls", repo.FullName),
+		Params:   filter.GetFilter(),
+	}
+
+	reply, err := utils.GetWithRetryWithRateCheck(cfg, url)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(reply.Body, &pulls)
+	return pulls, err
 }
 
-func ListPullsForRepoByPage(cfg *config.Config, repo *repository.Repository, page int, filter common.Filter) (pulls []PullRequest, err error) {
-	return listPullsForRepoByPage(cfg, repo, page, filter)
-}
-
-func listPullsForRepo(cfg *config.Config, repo *repository.Repository, filter common.Filter) (pulls []PullRequest, err error) {
+func ListPullsForRepo(cfg *config.Config, repo *repository.Repository, filter common.Filter) (pulls []PullRequest, err error) {
 	pulls = make([]PullRequest, 0, 10)
 	page := 1
 	for {
 		var pullsPerPage []PullRequest
-		pullsPerPage, err = listPullsForRepoByPage(cfg, repo, page, filter)
+		pullsPerPage, err = ListPullsForRepoByPage(cfg, repo, page, filter)
 		if err != nil {
 			break
 		}
@@ -55,32 +59,12 @@ func listPullsForRepo(cfg *config.Config, repo *repository.Repository, filter co
 	return pulls, err
 }
 
-func listPullsForRepoByPage(cfg *config.Config, repo *repository.Repository, page int, filter common.Filter) (pulls []PullRequest, err error) {
-	params := map[string]string{
-		"page":     strconv.Itoa(page),
-		"per_page": strconv.Itoa(cfg.GetPerPage()),
+func ListPullsForRepoByPage(cfg *config.Config, repo *repository.Repository, page int, filter common.Filter) (pulls []PullRequest, err error) {
+	if filter == nil {
+		filter = NewFilter()
 	}
-
-	if filter != nil {
-		filterMap := filter.GetFilter()
-		for key, value := range filterMap {
-			params[key] = value
-		}
-	}
-
-	url := utils.URL{
-		Endpoint: cfg.GetGithubRestAPI(),
-		Path:     fmt.Sprintf("repos/%s/pulls", repo.FullName),
-		Params:   params,
-	}
-
-	reply, err := utils.GetWithRetryWithRateCheck(cfg, url)
-	if err != nil {
-		return nil, err
-	}
-	pulls = make([]PullRequest, 0, 10)
-	err = json.Unmarshal(reply.Body, &pulls)
-	return pulls, err
+	filter.SetPageInfo(page, cfg.GetPerPage())
+	return ListPullsForRepoByFilter(cfg, repo, filter)
 }
 
 func (p *PullRequest) ToJson() (string, error) {

@@ -66,48 +66,11 @@ func (i Issue) GetTimeLineByPage(cfg *config.Config, page int) (events Events, e
 	return events, err
 }
 
-func ListIssueForRepoByPage(cfg *config.Config, repo *repository.Repository, page int, filter common.Filter) (issues []Issue, err error) {
-	issues, err = listIssueForRepoByPage(cfg, repo, page, filter)
-	return FilterPullRequest(issues), err
-}
-
-func listIssueForRepo(cfg *config.Config, repo *repository.Repository, filter common.Filter) (issues []Issue, err error) {
-	issues = make([]Issue, 0, 20)
-
-	page := 1
-	for {
-		var issuesPerPage []Issue
-		issuesPerPage, err = listIssueForRepoByPage(cfg, repo, page, filter)
-		if err != nil {
-			return issues, err
-		}
-		issues = append(issues, issuesPerPage...)
-		page++
-		if len(issuesPerPage) != cfg.GetPerPage() {
-			break
-		}
-	}
-	return FilterPullRequest(issues), err
-}
-
-func listIssueForRepoByPage(cfg *config.Config, repo *repository.Repository, page int, filter common.Filter) (issues []Issue, err error) {
-	issues = make([]Issue, 0, 20)
-
-	// prepare url params
-	params := map[string]string{
-		"page":     strconv.Itoa(page),
-		"per_page": strconv.Itoa(cfg.GetPerPage()),
-	}
-	if filter != nil {
-		filterMap := filter.GetFilter()
-		for key, value := range filterMap {
-			params[key] = value
-		}
-	}
+func ListIssueForRepoByFilter(cfg *config.Config, repo *repository.Repository, filter common.Filter) (issues Issues, err error) {
 	url := utils.URL{
 		Endpoint: cfg.GetGithubRestAPI(),
 		Path:     fmt.Sprintf("repos/%s/issues", repo.FullName),
-		Params:   params,
+		Params:   filter.GetFilter(),
 	}
 
 	reply, err := utils.GetWithRetryWithRateCheck(cfg, url)
@@ -122,24 +85,44 @@ func listIssueForRepoByPage(cfg *config.Config, repo *repository.Repository, pag
 	return issues, err
 }
 
+func ListIssueForRepoByPage(cfg *config.Config, repo *repository.Repository, page int, filter common.Filter) (issues Issues, err error) {
+	if filter == nil {
+		filter = NewFilter()
+	}
+	filter.SetPageInfo(page, cfg.GetPerPage())
+	return ListIssueForRepoByFilter(cfg, repo, filter)
+}
+
+func ListIssueForRepo(cfg *config.Config, repo *repository.Repository, filter common.Filter) (issues Issues, err error) {
+	issues = make([]Issue, 0, 20)
+
+	page := 1
+	perPage := cfg.GetPerPage()
+	for {
+		var issuesPerPage Issues
+		issuesPerPage, err = ListIssueForRepoByPage(cfg, repo, page, filter)
+		if err != nil {
+			return issues, err
+		}
+		issues = append(issues, issuesPerPage...)
+		page++
+		if len(issuesPerPage) != perPage {
+			break
+		}
+	}
+	return issues, err
+}
+
 func ListIssueForRepoByLabels(cfg *config.Config, repo *repository.Repository, labels []common.Label) (issues []Issue, err error) {
 	filter := NewFilter()
 	filter.SetLabelsFilter(labels)
-	return listIssueForRepo(cfg, repo, filter)
+	return ListIssueForRepoByFilter(cfg, repo, filter)
 }
 
 func ListIssueForRepoByMilestone(cfg *config.Config, repo *repository.Repository, milestone *common.Milestone) (issues []Issue, err error) {
 	filter := NewFilter()
 	filter.SetMileStoneFilter(milestone)
-	return listIssueForRepo(cfg, repo, filter)
-}
-
-func ListIssueForRepo(cfg *config.Config, repo *repository.Repository) (issues []Issue, err error) {
-	return listIssueForRepo(cfg, repo, nil)
-}
-
-func ListIssueForRepoByFilter(cfg *config.Config, repo *repository.Repository, filter common.Filter) (issues []Issue, err error) {
-	return listIssueForRepo(cfg, repo, filter)
+	return ListIssueForRepoByFilter(cfg, repo, filter)
 }
 
 func (i Issue) ToJson() (string, error) {
@@ -147,18 +130,18 @@ func (i Issue) ToJson() (string, error) {
 	return string(s), err
 }
 
-func FilterPullRequest(issues []Issue) []Issue {
-	left, right := 0, len(issues)-1
+func (i Issues) RemovePullRequest() Issues {
+	left, right := 0, len(i)-1
 	for left < right {
-		if issues[left].PullRequest == nil {
+		if i[left].PullRequest == nil {
 			left++
 			continue
 		}
-		if issues[right].PullRequest != nil {
+		if i[right].PullRequest != nil {
 			right--
 			continue
 		}
-		issues[left], issues[right] = issues[right], issues[left]
+		i[left], i[right] = i[right], i[left]
 	}
-	return issues[:right]
+	return i[:left]
 }

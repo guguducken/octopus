@@ -30,6 +30,8 @@ var (
 	ErrNotIssue = errors.New("this is not an issue, maybe is a pull request")
 )
 
+type Issues []Issue
+
 type Issue struct {
 	URL                   string `json:"url"`
 	RepositoryURL         string `json:"repository_url"`

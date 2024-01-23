@@ -33,7 +33,7 @@ func TestListPullsForRepo(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	pulls, err := ListPullsForRepo(cfg, repo)
+	pulls, err := ListPullsForRepo(cfg, repo, nil)
 	if err != nil {
 		panic(err)
 	}

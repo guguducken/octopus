@@ -66,5 +66,26 @@ func TestListIssueForRepoByFilter(t *testing.T) {
 	for _, i := range issues {
 		fmt.Printf("i.Number: %v\n", i.Number)
 	}
+}
 
+func TestListIssueForRepo(t *testing.T) {
+	cfg := config.New(os.Getenv("GITHUB_TOKEN"))
+	repo, err := repository.GetRepository(cfg, "matrixorigin", "matrixone")
+	if err != nil {
+		panic(err)
+	}
+	filter := NewFilter()
+	filter.SetLabelsFilter([]common.Label{
+		{Name: "kind/bug"},
+	})
+	issues, err := ListIssueForRepo(cfg, repo, filter)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("len(issues): %v\n", len(issues))
+	issues = issues.RemovePullRequest()
+	fmt.Printf("len(issues): %v\n", len(issues))
+	for _, issue := range issues {
+		fmt.Printf("issue.Number: %v\n", issue.Number)
+	}
 }
