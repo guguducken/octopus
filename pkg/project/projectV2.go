@@ -115,13 +115,14 @@ func ListProjectV2ForIssueByCursor(cfg *config.Config, issue *issue.Issue, curso
 }
 
 func listFieldValueForIssue[T FieldValuer](cfg *config.Config, issue *issue.Issue,
-	field *Field, includeArchived bool, fieldValueType T, cursor string) ([]T, error) {
+	field *Field, includeArchived bool, cursor string) ([]T, error) {
 	allFieldValues := GenFieldValuers[T]()
 	var err error
+	var filterType T
 
 	for {
 		var fieldValues *FieldValues[T]
-		fieldValues, err = ListFieldValueForIssueByCursor(cfg, issue, field, includeArchived, fieldValueType, cursor, "")
+		fieldValues, err = ListFieldValueForIssueByCursor(cfg, issue, field, includeArchived, filterType, cursor, "")
 		if err != nil {
 			break
 		}
@@ -185,20 +186,20 @@ func ListFieldValueForIssueByCursor[T FieldValuer](cfg *config.Config, issue *is
 
 func ListTextFieldValueForIssue(cfg *config.Config, issue *issue.Issue,
 	field *Field, includeArchived bool) ([]TextFieldValue, error) {
-	return listFieldValueForIssue(cfg, issue, field, includeArchived, TextFieldValue{}, DefaultStartCursor)
+	return listFieldValueForIssue[TextFieldValue](cfg, issue, field, includeArchived, DefaultStartCursor)
 }
 
 func ListSingleSelectFieldValueForIssue(cfg *config.Config, issue *issue.Issue,
 	field *Field, includeArchived bool) ([]SingleSelectFieldValue, error) {
-	return listFieldValueForIssue(cfg, issue, field, includeArchived, SingleSelectFieldValue{}, DefaultStartCursor)
+	return listFieldValueForIssue[SingleSelectFieldValue](cfg, issue, field, includeArchived, DefaultStartCursor)
 }
 
 func ListNumberFieldValueForIssue(cfg *config.Config, issue *issue.Issue,
 	field *Field, includeArchived bool) ([]NumberFieldValue, error) {
-	return listFieldValueForIssue(cfg, issue, field, includeArchived, NumberFieldValue{}, DefaultStartCursor)
+	return listFieldValueForIssue[NumberFieldValue](cfg, issue, field, includeArchived, DefaultStartCursor)
 }
 
 func ListLabelFieldValueForIssue(cfg *config.Config, issue *issue.Issue,
 	field *Field, includeArchived bool) ([]LabelFieldValue, error) {
-	return listFieldValueForIssue(cfg, issue, field, includeArchived, LabelFieldValue{}, DefaultStartCursor)
+	return listFieldValueForIssue[LabelFieldValue](cfg, issue, field, includeArchived, DefaultStartCursor)
 }

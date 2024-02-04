@@ -30,10 +30,10 @@ func NewFilter() *Filter {
 	}
 }
 
-func (f *Filter) SetLabelsFilter(labels []common.Label) {
+func (f *Filter) SetLabelsFilter(labels []string) {
 	labelFilter := ""
 	for i := 0; i < len(labels); i++ {
-		labelFilter += labels[i].Name + ","
+		labelFilter += labels[i] + ","
 	}
 	if len(labelFilter) != 0 {
 		labelFilter = labelFilter[:len(labelFilter)-1]
