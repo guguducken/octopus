@@ -3,8 +3,6 @@ package issue
 import (
 	"maps"
 	"strconv"
-
-	"github.com/guguducken/octopus/pkg/common"
 )
 
 type Filter struct {

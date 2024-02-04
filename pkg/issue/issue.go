@@ -115,7 +115,11 @@ func ListIssueForRepo(cfg *config.Config, repo *repository.Repository, filter co
 
 func ListIssueForRepoByLabels(cfg *config.Config, repo *repository.Repository, labels []common.Label) (issues []Issue, err error) {
 	filter := NewFilter()
-	filter.SetLabelsFilter(labels)
+	l := make([]string, 0, 10)
+	for _, label := range labels {
+		l = append(l, label.Name)
+	}
+	filter.SetLabelsFilter(l)
 	return ListIssueForRepoByFilter(cfg, repo, filter)
 }
 
