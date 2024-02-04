@@ -6,7 +6,6 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/guguducken/octopus/pkg/common"
 	"github.com/guguducken/octopus/pkg/config"
 	"github.com/guguducken/octopus/pkg/repository"
 )
@@ -52,8 +51,8 @@ func TestListIssueForRepoByFilter(t *testing.T) {
 		panic(err)
 	}
 	filter := NewFilter()
-	filter.SetLabelsFilter([]common.Label{
-		{Name: "kind/bug"},
+	filter.SetLabelsFilter([]string{
+		"kind/bug",
 	})
 	issues, err := ListIssueForRepoByFilter(cfg, repo, filter)
 	if err != nil {
@@ -75,8 +74,8 @@ func TestListIssueForRepo(t *testing.T) {
 		panic(err)
 	}
 	filter := NewFilter()
-	filter.SetLabelsFilter([]common.Label{
-		{Name: "kind/bug"},
+	filter.SetLabelsFilter([]string{
+		"kind/bug",
 	})
 	issues, err := ListIssueForRepo(cfg, repo, filter)
 	if err != nil {
